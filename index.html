@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MEGA//CRYPTO — Gerador Quântico Mega-Sena</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <div class="app-shell">
+    <!-- Cabeçalho -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">
+          <span>60</span>
+        </div>
+        <div>
+          <h1>MEGA<span class="accent">//CRYPTO</span></h1>
+          <p class="subtitle">Gerador CSPRNG de Entropia Criptográfica</p>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="status-pill" id="entropyStatus" title="Entropia fornecida pelo hardware via Web Crypto API">
+          <span class="pulse-dot"></span>
+          <span>CSPRNG ATIVO</span>
+        </div>
+        <button class="icon-btn" id="soundToggle" title="Ativar/Desativar efeitos sonoros" aria-label="Alternar som">
+          🔊
+        </button>
+      </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-grid">
+      <!-- Coluna Esquerda: Configurações e Volante -->
+      <section class="panel controls-panel">
+        <div class="panel-header">
+          <h2>Parâmetros do Sorteio</h2>
+          <span class="badge">Regras Oficiais (6 a 20)</span>
+        </div>
+
+        <div class="controls-grid">
+          <div class="control-group">
+            <div class="control-label">
+              <label for="numbersCount">Dezenas por jogo</label>
+              <span class="value-chip" id="numbersCountVal">6</span>
+            </div>
+            <input type="range" id="numbersCount" min="6" max="20" value="6" />
+          </div>
+
+          <div class="control-group">
+            <div class="control-label">
+              <label for="gamesCount">Quantidade de jogos</label>
+              <span class="value-chip" id="gamesCountVal">1</span>
+            </div>
+            <input type="range" id="gamesCount" min="1" max="10" value="1" />
+          </div>
+
+          <div class="control-group inline-input">
+            <label for="basePrice">Valor aposta simples (R$)</label>
+            <input type="number" id="basePrice" min="1" step="0.50" value="6.00" />
+          </div>
+        </div>
+
+        <!-- Métricas Matemáticas -->
+        <div class="metrics-bar">
+          <div class="metric-card">
+            <span class="metric-label">Custo Estimado</span>
+            <strong class="metric-value accent" id="totalCost">R$ 6,00</strong>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Chance na Sena</span>
+            <strong class="metric-value" id="winOdds">1 em 50.063.860</strong>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Combinações</span>
+            <strong class="metric-value" id="combinationsCount">1</strong>
+          </div>
+        </div>
+
+        <!-- Volante Interativo -->
+        <div class="volante-section">
+          <div class="volante-header">
+            <div>
+              <h3>Volante Inteligente</h3>
+              <p class="hint">Clique para alternar: <strong>Neutro</strong> → <span class="text-cyan">Fixar</span> → <span class="text-red">Excluir</span></p>
+            </div>
+            <button class="btn-ghost btn-sm" id="clearVolanteBtn">Limpar filtros</button>
+          </div>
+
+          <div class="volante-legend">
+            <span><i class="dot dot-fixed"></i> Fixas: <strong id="fixedCounter">0</strong></span>
+            <span><i class="dot dot-excluded"></i> Excluídas: <strong id="excludedCounter">0</strong></span>
+            <span><i class="dot dot-drawn"></i> Último sorteio</span>
+          </div>
+
+          <div class="volante-grid" id="volanteGrid"></div>
+        </div>
+
+        <button class="btn-primary" id="generateBtn">
+          <span class="btn-glow"></span>
+          <span class="btn-text">⚡ GERAR DEZENAS ALEATÓRIAS</span>
+        </button>
+      </section>
+
+      <!-- Coluna Direita: Resultados, Conferidor e Histórico -->
+      <section class="right-column">
+        <!-- Jogos Recém Gerados -->
+        <div class="panel results-panel">
+          <div class="panel-header">
+            <h2>Jogos Gerados</h2>
+            <div class="panel-actions">
+              <button class="btn-ghost btn-sm" id="copyCurrentBtn" disabled>Copiar</button>
+              <button class="btn-ghost btn-sm" id="saveAllBtn" disabled>Salvar no Histórico</button>
+            </div>
+          </div>
+
+          <div id="resultsContainer" class="results-list">
+            <div class="empty-state">
+              <div class="empty-orb">🎲</div>
+              <p>Clique em <strong>Gerar Dezenas</strong> para iniciar a coleta de entropia criptográfica.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conferidor + Histórico -->
+        <div class="panel history-panel">
+          <div class="panel-header">
+            <h2>Histórico &amp; Conferidor</h2>
+            <div class="panel-actions">
+              <button class="btn-ghost btn-sm" id="exportTxtBtn">Exportar .TXT</button>
+              <button class="btn-ghost btn-sm danger-text" id="clearHistoryBtn">Limpar</button>
+            </div>
+          </div>
+
+          <!-- Conferidor -->
+          <div class="checker-box">
+            <label for="officialResult">Conferir com resultado oficial (digite até 6 dezenas separadas por espaço):</label>
+            <div class="checker-input-row">
+              <input
+                type="text"
+                id="officialResult"
+                placeholder="Ex: 04 12 27 33 48 59"
+                autocomplete="off"
+              />
+              <button class="btn-secondary btn-sm" id="clearCheckerBtn">Zerar</button>
+            </div>
+          </div>
+
+          <div id="historyList" class="history-list">
+            <div class="empty-state compact">
+              <p>Nenhum jogo salvo ainda.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Algoritmo: <code>Web Crypto API (Uint32Array + Rejection Sampling + Fisher-Yates)</code> • Os dados salvos ficam apenas no seu navegador.</p>
+    </footer>
+  </div>
+
+  <!-- Toast de notificações -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
